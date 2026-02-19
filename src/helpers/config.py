@@ -5,9 +5,11 @@ class settings(BaseSettings):
     APP_NAME:str
     APP_VERSION: str
     OPENAI_API_SECRET: str
+    
     FILE_ALLOWED_TYPE: list
     FILE_MAX_SIZE: int
     FILE_CHUNK_SIZE: int
+
     MONGODB_URL: str
     MONGODB_DATABASE: str
     
