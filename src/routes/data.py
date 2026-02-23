@@ -4,9 +4,10 @@ from helpers.config import get_settings, settings
 from controllers import DataController , ProjectController, ProcessController
 from models import ResponseEnums
 from models.ProjectModel import ProjectModel
+from models.ChunkModel import ChunkModel
+from models.db_schemes import DataChunk
 from fastapi.responses import JSONResponse
 from .schema.data import ProcessRequest
-import os
 import aiofiles
 import logging
 from .schema.data import ProcessRequest
@@ -72,11 +73,17 @@ async def upload_file(request: Request, project_id: str, file: UploadFile,
 
 
 @data_router.post("/process/{project_id}")
-async def process_endpoint(project_id:str,ProcessRequest:ProcessRequest):
+async def process_endpoint(request: Request, project_id:str, process_request:ProcessRequest):
 
-    file_id =ProcessRequest.file_id
-    chunk_size = ProcessRequest.chunk_size
-    overlap_size = ProcessRequest.overlap_size
+    file_id =process_request.file_id
+    chunk_size = process_request.chunk_size
+    overlap_size = process_request.overlap_size
+    do_reset = process_request.do_reset
+
+    project_model = ProjectModel(
+        db_client=request.app.db_client
+        )
+    project = await project_model.get_project_or_create_one(project_id=project_id)
 
     Process_controller = ProcessController(project_id=project_id)
 
@@ -97,4 +104,32 @@ async def process_endpoint(project_id:str,ProcessRequest:ProcessRequest):
             }
         )
     
-    return file_cunks
+    file_cunks_records = [
+        DataChunk(
+            chunk_text=chunk.page_content,
+            chunk_metadata=chunk.metadata,
+            chunk_order=i+1,
+            chunk_project_id=project.id
+        )
+    for i,chunk in enumerate(file_cunks)
+
+    ]
+
+    chunk_model = ChunkModel(
+        db_client=request.app.db_client
+        )
+    
+    if do_reset ==1:
+        _ = await chunk_model.delete_chunks_by_project_id(
+            project_id=project.id
+            )
+
+    no_records = await chunk_model.insert_many_chunks(chunks=file_cunks_records)
+
+    return JSONResponse(
+        content={
+            "signal": ResponseEnums.PROCESSING_SUCCESS.value,
+            "file_id": file_id,
+            "total_chunks": no_records  
+        }
+    )
