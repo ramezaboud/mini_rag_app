@@ -1,11 +1,14 @@
 from urllib.request import Request
 from fastapi import FastAPI, APIRouter, Depends, UploadFile, status, Request
+import os
 from helpers.config import get_settings, settings
 from controllers import DataController , ProjectController, ProcessController
 from models import ResponseEnums
 from models.ProjectModel import ProjectModel
 from models.ChunkModel import ChunkModel
-from models.db_schemes import DataChunk
+from models.AssetModel import AssetModel
+from models.db_schemes import DataChunk, Asset
+from models.enum.AssetsTypeEnums import AssetsTypeEnum
 from fastapi.responses import JSONResponse
 from .schema.data import ProcessRequest
 import aiofiles
@@ -29,6 +32,7 @@ async def upload_file(request: Request, project_id: str, file: UploadFile,
     project_model = await ProjectModel.create_instance(
         db_client=request.app.db_client
         )
+    
     project = await project_model.get_project_or_create_one(project_id=project_id)
     
     data_controller = DataController()
@@ -64,10 +68,26 @@ async def upload_file(request: Request, project_id: str, file: UploadFile,
             }
         )
 
+
+    # store the assets into the database
+    
+    asset_model = await AssetModel.create_instance(
+        db_client=request.app.db_client
+    )
+
+    asset_resource = Asset(
+        asset_project_id=project.id,
+        asset_name=file_id,
+        asset_size = os.path.getsize(file_path),
+        asset_type=AssetsTypeEnum.FILE.value
+    )
+
+    asset_record = await asset_model.create_asset(asset=asset_resource)
+
     return JSONResponse(
             content={
                 "signal": ResponseEnums.FILE_UPLOAD_SUCCESS.value,
-                "file_id": file_id
+                "file_id": str(asset_record.id)
             }
         )
 
