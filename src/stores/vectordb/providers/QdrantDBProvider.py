@@ -111,7 +111,7 @@ class QdrantDBProvider(VectorDBInterface):
             metadatas = [None] * len(texts)
 
         if record_ids is None:
-            record_ids = list(range(0, len(texts)))
+            record_ids = list(range(0,len(texts)))
 
         for i in range(0, len(texts), batch_size):
 
@@ -136,10 +136,13 @@ class QdrantDBProvider(VectorDBInterface):
                 for x in range(len(batch_texts))
             ]
 
+
+
+
             try:
-                _ = self.client.upload_records(
+                _ = self.client.upsert(
                     collection_name=collection_name,
-                    records=batch_records
+                    points=batch_records
                 )
 
             except Exception as e:

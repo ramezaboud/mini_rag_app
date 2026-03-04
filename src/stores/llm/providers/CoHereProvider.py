@@ -69,7 +69,7 @@ class CoHereProvider(LLMInterface):
         
 
 
-    def embed_text(self, text: str, document_id: str = None):
+    def embed_text(self, text: str, document_type: str = None):
 
         if not self.client:
             self.logger.error("Cohere client is not set.")
@@ -78,14 +78,14 @@ class CoHereProvider(LLMInterface):
             self.logger.error("Embedding model ID for Cohere is not set.")
 
         input_type = CohereEnums.DOCUMENT
-        if DocumentTypeEnum.QUERY:
+        if document_type == DocumentTypeEnum.QUERY:
             input_type = CohereEnums.QUERY
             
         response = self.client.embed(
             model = self.embedding_model_id,
-            input = self.process_text(text),
+            texts = [self.process_text(text)],
             input_type = input_type,
-            mbedding_types=["float"]
+            embedding_types=["float"]
         )
 
         if not response or not response.embeddings or not response.embeddings.float:

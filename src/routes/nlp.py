@@ -1,6 +1,6 @@
 from fastapi import FastAPI, APIRouter, Request, status
 from fastapi.responses import JSONResponse
-from ..controllers.NLPController import NLPController
+from controllers.NLPController import NLPController
 from .schema.nlp import PushRequest
 from models.ProjectModel import ProjectModel
 from models.ChunkModel import ChunkModel
@@ -10,7 +10,7 @@ import logging
 logger = logging.getLogger('uvicorn.error')
 
 nlp_router = APIRouter(
-    prefifx="/api/v1/nlp",
+    prefix="/api/v1/nlp",
     tags=["api_v1","nlp"]
 )
 

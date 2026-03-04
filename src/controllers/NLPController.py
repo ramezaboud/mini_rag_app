@@ -16,7 +16,7 @@ class NLPController(BaseController):
 
 
     def create_collection_name(self, project_id: str):
-        return f"collection_{self.vectordb_client.default_vector_size}_{project_id}".strip()
+        return f"collection_{project_id}".strip()
     
 
     async def reset_vector_db_collection(self, project: Project):
@@ -36,13 +36,13 @@ class NLPController(BaseController):
     async def index_into_vector_db(self, project: Project,
                                    chunks: List[DataChunk],
                                    chunks_ids: List[int],
-                                   do_rest: bool = False):
+                                   do_reset: bool = False):
         
         # step1: get collection name
         collection_name = self.create_collection_name(project_id=project.project_id)
 
         # step2: manage items
-        tests = [
+        texts = [
             chunk.chunk_text
             for chunk in chunks
         ]
@@ -50,18 +50,20 @@ class NLPController(BaseController):
             chunk.chunk_metadata
             for chunk in chunks
         ]
-        vectors = self.embedding_client.embed_text(text = tests,
-                                                   document_id=DocumentTypeEnum.DOCUMENT.value)
+        vectors = [
+                    self.embedding_client.embed_text(text=t, document_type=DocumentTypeEnum.DOCUMENT.value)
+                    for t in texts
+                ]
 
         # step3: create collection if not exists
-        _ = await self.vectordb_client.create_collection(collection_name = collection_name,
+        _ = self.vectordb_client.create_collection(collection_name = collection_name,
                                                          embedding_size = self.embedding_client.embedding_size,
-                                                         do_rest = do_rest)
+                                                         do_reset = do_reset)
 
         # step4: insert into vector db
-        _ = await self.vectordb_client.insert_many(collection_name = collection_name,
-                                                  tests = tests,
-                                                  metadata = metadata,
+        _ = self.vectordb_client.insert_many(collection_name = collection_name,
+                                                  texts = texts,
+                                                  metadatas = metadata,
                                                   vectors = vectors,
                                                   record_ids = chunks_ids
                                                   )

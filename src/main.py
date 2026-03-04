@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routes import base, data
+from routes import base, data, nlp
 from motor.motor_asyncio import AsyncIOMotorClient
 from helpers.config import get_settings
 from stores.llm.LLMProviderFactory import LLMProviderFactory
@@ -34,6 +34,7 @@ async def startup_cycle():
         )
     app.vectordb_client.connect()
 
+@app.on_event("shutdown")
 
 @app.on_event("shutdown")
 
@@ -41,6 +42,6 @@ async def shutdown_cycle():
     app.mongo_conn.close()    
     app.vectordb_client.disconnect()
 
-
 app.include_router(base.base_router)
 app.include_router(data.data_router)
+app.include_router(nlp.nlp_router)
