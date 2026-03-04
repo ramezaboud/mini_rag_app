@@ -36,6 +36,8 @@ async def startup_cycle():
 
 @app.on_event("shutdown")
 
+@app.on_event("shutdown")
+
 async def shutdown_cycle():
     app.mongo_conn.close()    
     app.vectordb_client.disconnect()
