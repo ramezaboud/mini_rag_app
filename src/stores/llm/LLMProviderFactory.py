@@ -1,4 +1,4 @@
-from .providers import CoHereProvider, OpenAIProvider
+from .providers import CoHereProvider, OPENAIProvider
 from .LLMEnums import LLMEnum
 
 class LLMProviderFactory:
@@ -9,20 +9,20 @@ class LLMProviderFactory:
     def create(self, provider: str):
 
         if provider == LLMEnum.OPENAI.value:
-            return OpenAIProvider(
+            return OPENAIProvider(
                 api_key = self.config.OPENAI_API_KEY,
                 api_url = self.config.OPENAI_API_URL,
-                default_input_max_characters = self.config.OPENAI_DEFAULT_INPUT_MAX_CHARACTERS,
-                default_generation_max_output_tokens = self.config.OPENAI_DEFAULT_GENERATION_MAX_OUTPUT_TOKENS,
-                default_generation_temperature = self.config.OPENAI_DEFAULT_GENERATION_TEMPERATURE
+                default_input_max_characters = self.config.INPUT_DAFAULT_MAX_CHARACTERS,
+                default_generation_max_output_tokens = self.config.GENERATION_DAFAULT_MAX_TOKENS,
+                default_generation_temperature = self.config.GENERATION_DAFAULT_TEMPERATURE
             )
 
         if provider == LLMEnum.COHERE.value:
             return CoHereProvider(
                 api_key = self.config.COHERE_API_KEY,
-                default_input_max_characters = self.config.COHERE_DEFAULT_INPUT_MAX_CHARACTERS,
-                default_generation_max_output_tokens = self.config.COHERE_DEFAULT_GENERATION_MAX_OUTPUT_TOKENS,
-                default_generation_temperature = self.config.COHERE_DEFAULT_GENERATION_TEMPERATURE
+                default_input_max_characters = self.config.INPUT_DAFAULT_MAX_CHARACTERS,
+                default_generation_max_output_tokens = self.config.GENERATION_DAFAULT_MAX_TOKENS,
+                default_generation_temperature = self.config.GENERATION_DAFAULT_TEMPERATURE
             )
 
         return None
