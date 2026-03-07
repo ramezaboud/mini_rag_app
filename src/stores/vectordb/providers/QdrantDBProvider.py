@@ -152,9 +152,9 @@ class QdrantDBProvider(VectorDBInterface):
 
     def search_by_vector(self, collection_name: str, vector: list, limit: int):
 
-        return self.client.search(
+        return self.client.query_points(
             collection_name=collection_name,
-            vector=vector,
+            query=vector,
             limit=limit
         )
     
