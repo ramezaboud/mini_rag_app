@@ -14,4 +14,6 @@ class ResponseEnums(Enum):
     PROJECT_NOT_FOUND_ERROR = "project_not_found_error"
     INSERT_INTO_VECTOR_DB_ERROR = "insert_into_vector_db_error"
     INSERT_INTO_VECTOR_DB_SUCCESS = "insert_into_vector_db_success"
-    
+    VECTORDB_COLLECTION_RETRIEVED = "vectordb_collection_retrieved"
+    VECTORDB_SEARCH_ERROR = "vectordb_search_error"
+    VECTORDB_SEARCH_SUCCESS = "vectordb_search_success"
