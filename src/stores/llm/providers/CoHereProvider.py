@@ -25,6 +25,8 @@ class CoHereProvider(LLMInterface):
             api_key = self.api_key
             )
 
+        self.enums = CohereEnums
+
         self.logger = logging.getLogger(__name__)
 
 
