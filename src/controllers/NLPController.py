@@ -7,12 +7,15 @@ import json
 class NLPController(BaseController):
 
     def __init__(self, vectordb_client, 
-                 generation_client, embedding_client, ):
+                        generation_client, 
+                        embedding_client, 
+                        templates_parser):
         super().__init__()
 
         self.vectordb_client = vectordb_client
         self.generation_client = generation_client
         self.embedding_client = embedding_client
+        self.templates_parser = templates_parser
 
 
     def create_collection_name(self, project_id: str):
@@ -95,3 +98,57 @@ class NLPController(BaseController):
             return False
         
         return results
+    
+    async def answer_rag_question(self, project: Project, query: str, limit: int = 10):
+
+        answer, full_prompt, chat_history = None, None, None
+
+        # step1: search vector db collection for relevant chunks
+
+        retrieved_documents = await self.search_vector_db_collection(
+            project = project,
+            text = query,
+            limit = limit
+        )
+        if not retrieved_documents or len(retrieved_documents) == 0:
+            return answer, full_prompt, chat_history
+      
+        # step2: Construct LLM prompt
+
+        system_prompt = self.templates_parser.get(group="rag", key="system_prompt")
+
+        documents_prompts = "\n".join([
+            self.templates_parser.get(
+                group="rag",
+                key="document_prompt",
+                vars={
+                    "doc_num": idx +1,
+                    "chunk_text": doc.text,
+                }
+            )
+            for idx, doc in enumerate(retrieved_documents)
+        ])
+
+        footer_prompt = self.templates_parser.get(group="rag", key="footer_prompt")
+
+        # step3: Construct Generation Client Prompts
+
+        chat_history = [
+            self.generation_client.construct_prompt(
+                prompt = system_prompt,
+                role = self.generation_client.enums.SYSTEM.value
+            )
+        ]
+
+        full_prompt = "\n\n".join([documents_prompts,footer_prompt])
+
+        # step4: Retrieve the Answer
+
+        answer = self.generation_client.generate_text(
+            prompt = full_prompt,
+            chat_history = chat_history
+        )
+
+        return answer, full_prompt, chat_history
+
+        
