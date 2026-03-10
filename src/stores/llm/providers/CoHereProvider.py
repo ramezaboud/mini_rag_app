@@ -101,6 +101,6 @@ class CoHereProvider(LLMInterface):
 
         return{
             "role": role,
-            "content": self.process_text(prompt)
+            "message": self.process_text(prompt)
         }
     
