@@ -129,7 +129,9 @@ class NLPController(BaseController):
             for idx, doc in enumerate(retrieved_documents)
         ])
 
-        footer_prompt = self.templates_parser.get(group="rag", key="footer_prompt")
+        footer_prompt = self.templates_parser.get(group="rag", key="footer_prompt", vars={
+            "query": query
+        })
 
         # step3: Construct Generation Client Prompts
 
